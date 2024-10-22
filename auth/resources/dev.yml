@@ -1,0 +1,13 @@
+server:
+  port: 8000
+database:
+  username: user
+  password: password
+  host: localhost
+  port: 5432
+  database: test
+jwt:
+  secret: 'my_secret'
+  algorithm: 'HS256'
+  expires_delta_access: 60000
+  expires_delta_refresh: 60000
