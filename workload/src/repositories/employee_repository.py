@@ -30,6 +30,20 @@ class EmployeeRepository:
                     raise NotNullConstraintViolationException(f"Not null constraint violation: {e.orig}")
                 raise Exception(f"Unknown exception: {e}")
 
+    async def create_employees(self, employees: list[Employee]) -> None:
+        async with self.database.session_factory() as session:
+            try:
+                session.add_all(employees)
+                await session.commit()
+                self.log.info(f"Saved new users. data={employees}")
+            except IntegrityError as e:
+                await session.rollback()
+                if "unique constraint" in str(e.orig):
+                    raise UniqueConstraintViolationException(f"Unique constraint violation: {e.orig}")
+                elif "not-null constraint" in str(e.orig):
+                    raise NotNullConstraintViolationException(f"Not null constraint violation: {e.orig}")
+                raise Exception(f"Unknown exception: {e}")
+
     async def get_by_id(self, id: int) -> Optional[Employee]:
         async with self.database.session_factory() as session:
             result = await session.execute(select(Employee).where(Employee.id == id))

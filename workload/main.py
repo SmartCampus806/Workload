@@ -6,6 +6,7 @@ from dependency_injector.wiring import Container
 from fastapi import FastAPI
 
 from src.contaier import MainContainer
+from src.models import Groups
 from src.routers import load_files_router
 
 app = FastAPI()
@@ -20,11 +21,11 @@ def add_moules_in_container(container_to_add: Container) -> None:
         container_to_add.wire(modules=[sys.modules[module]])
     container_to_add.wire(modules=[sys.modules[__name__]])
 
-    for file in os.listdir("src/utils"):
-        if file in excluded_files: continue
-        module = f"src.utils.{file.replace('.py', '')}"
-        container_to_add.wire(modules=[sys.modules[module]])
-    container_to_add.wire(modules=[sys.modules[__name__]])
+    # for file in os.listdir("src/utils"):
+    #     if file in excluded_files: continue
+    #     module = f"src.utils.{file.replace('.py', '')}"
+    #     container_to_add.wire(modules=[sys.modules[module]])
+    # container_to_add.wire(modules=[sys.modules[__name__]])
 
 
 def migrate(container: MainContainer):

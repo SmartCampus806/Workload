@@ -1,7 +1,9 @@
 from sqlalchemy import Column, BigInteger, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from src.models import BaseWithId
+from src.models.workload_group import group_workload_association
+
 
 class Groups(BaseWithId):
     __tablename__ = 'groups'
@@ -9,4 +11,8 @@ class Groups(BaseWithId):
     name = Column(String(255), nullable=False)
     students_count = Column(BigInteger, nullable=False)
 
-    workload_groups = relationship("WorkloadGroup", back_populates="group")
+    workloads: Mapped[list["Workload"]] = relationship(
+        'Workload',
+        secondary=group_workload_association,
+        back_populates='groups'
+    )
