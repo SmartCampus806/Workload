@@ -1,3 +1,5 @@
+import pandas as pd
+
 from src.models import Groups, Workload, Lesson
 from src.utils.configuration import AppConfig
 from src.utils.database_manager import Database
@@ -7,6 +9,10 @@ class WorkloadService:
     def __init__(self, database:Database, config: AppConfig):
         self.database = database
         self.config = config
+
+    def parse_and_save_workload(self, file_data):
+        df = pd.read_excel(file_data)
+        #TODO: логика парсинга и сохранения
 
     async def test(self):
         async with self.database.session_factory() as session:

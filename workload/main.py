@@ -6,11 +6,10 @@ from dependency_injector.wiring import Container
 from fastapi import FastAPI
 
 from src.contaier import MainContainer
-from src.models import Groups
 from src.routers import load_files_router
 
 app = FastAPI()
-app.include_router(load_files_router)
+app.include_router(load_files_router, prefix='/load')
 
 
 def add_moules_in_container(container_to_add: Container) -> None:

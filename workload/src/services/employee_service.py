@@ -1,5 +1,7 @@
 from typing import Optional
 
+import pandas as pd
+
 from src.models import Employee
 from src.repositories import EmployeeRepository
 from src.utils.logger import Logger
@@ -9,6 +11,10 @@ class EmployeeService:
     def __init__(self, employee_repository: EmployeeRepository, log: Logger):
         self.employee_repository = employee_repository
         self.log = log
+
+    def parse_and_save_employees(self, file_data):
+        df = pd.read_excel(file_data)
+        #TODO: логика парсинга и сохранения
 
     async def parse_and_save_employee_list(self):
         pass
