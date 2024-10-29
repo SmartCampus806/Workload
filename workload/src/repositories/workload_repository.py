@@ -1,29 +1,30 @@
 from typing import Optional, List
 
+from asyncpg import ForeignKeyViolationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.inspection import inspect
 
 from src.exceptions import UniqueConstraintViolationException, NotNullConstraintViolationException, \
     ForeignKeyViolationException
-from src.models.employee import Employee
+from src.models import Workload
 from src.utils.database_manager import Database
 from src.utils.logger import Logger
 
 
-class EmployeeRepository:
+class WorkloadRepository:
     def __init__(self, database: Database, log: Logger):
         self.database = database
         self.log = log
 
-    async def create_employee(self, employee: Employee) -> Employee:
+    async def create(self, workload: Workload) -> Workload:
         async with self.database.session_factory() as session:
             try:
-                session.add(employee)
+                session.add(workload)
                 await session.commit()
-                await session.refresh(employee)
-                self.log.info(f"Saved new employee. data={employee}")
-                return employee
+                await session.refresh(workload)
+                self.log.info(f"Saved new workload. data={workload}")
+                return workload
             except IntegrityError as e:
                 await session.rollback()
                 if "unique constraint" in str(e.orig):
@@ -33,15 +34,13 @@ class EmployeeRepository:
                 elif "ForeignKeyViolationError" in str(e.orig):
                     raise ForeignKeyViolationException("На найдена свзязь при попытке создания объекта")
                 raise Exception(f"Unknown exception: {e}")
-            finally:
-                await session.close()
 
-    async def create_employees(self, employees: list[Employee]) -> None:
+    async def create_all(self, workloads: list[Workload]) -> None:
         async with self.database.session_factory() as session:
             try:
-                session.add_all(employees)
+                session.add_all(workloads)
                 await session.commit()
-                self.log.info(f"Saved new employee. data={employees}")
+                self.log.info(f"Saved new workload. data={workloads}")
             except IntegrityError as e:
                 await session.rollback()
                 if "unique constraint" in str(e.orig):
@@ -51,27 +50,31 @@ class EmployeeRepository:
                 elif "ForeignKeyViolationError" in str(e.orig):
                     raise ForeignKeyViolationException("На найдена свзязь при попытке создания объекта")
                 raise Exception(f"Unknown exception: {e}")
-            finally:
-                await session.close()
 
-    async def get_by_id(self, id: int) -> Optional[Employee]:
+
+    async def get_by_id(self, id: int) -> Optional[Workload]:
         async with self.database.session_factory() as session:
-            result = await session.execute(select(Employee).where(Employee.id == id))
+            result = await session.execute(select(Workload).where(Workload.id == id))
             res = result.scalars().first()
             await session.close()
             return res
 
-    async def get_by_name(self, name: str) -> Optional[Employee]:
+    async def get_by_type(self, type: str) -> Optional[Workload]:
         async with self.database.session_factory() as session:
-            result = await session.execute(select(Employee).where(Employee.name == name))
+            result = await session.execute(select(Workload).where(Workload.type == type))
             return result.scalars().first()
 
-    async def get_by_name_like(self, name: str) -> List[Employee]:
+    async def get_by_employee_id(self, employee_id: int) -> Optional[Workload]:
         async with self.database.session_factory() as session:
-            result = await session.execute(select(Employee).where(Employee.name.like(f'%{name}%')))
-            return result.scalars().unique().all()
+            result = await session.execute(select(Workload).where(Workload.employee_id == employee_id))
+            return result.scalars().first()
 
-    async def get_all(self) -> List[Employee]:
+    async def get_by_lesson_id(self, lesson_id: int) -> Optional[Workload]:
         async with self.database.session_factory() as session:
-            result = await session.execute(select(Employee).distinct())
+            result = await session.execute(select(Workload).where(Workload.lesson_id == lesson_id))
+            return result.scalars().first()
+
+    async def get_all(self) -> List[Workload]:
+        async with self.database.session_factory() as session:
+            result = await session.execute(select(Workload).distinct())
             return result.scalars().unique().all()

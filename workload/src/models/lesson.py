@@ -11,4 +11,4 @@ class Lesson(BaseWithId):
     semestr = Column(String(255), CheckConstraint("semestr IN ('Осенний', 'весенний')"), nullable=False)
     faculty = Column(BigInteger, nullable=False)
 
-    workloads = relationship("Workload", back_populates="lesson")
+    workloads = relationship("Workload", back_populates="lesson", lazy=False)

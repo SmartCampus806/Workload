@@ -11,4 +11,4 @@ class Employee(BaseWithId):
     available_workload = Column(BigInteger, nullable=False)
     extra_workload = Column(BigInteger, nullable=False)
 
-    workloads = relationship("Workload", back_populates="employee")
+    workloads = relationship("Workload", back_populates="employee", lazy=False)

@@ -14,5 +14,6 @@ class Groups(BaseWithId):
     workloads: Mapped[list["Workload"]] = relationship(
         'Workload',
         secondary=group_workload_association,
-        back_populates='groups'
+        back_populates='groups',
+        lazy=False
     )

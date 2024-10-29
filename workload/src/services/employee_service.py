@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 
 import pandas as pd
 
+# from src.dtos.employees import EmployeeWithWorkload, EmployeeWorkload
 from src.models import Employee
 from src.repositories import EmployeeRepository
 from src.utils.logger import Logger
@@ -27,3 +28,9 @@ class EmployeeService:
 
     async def get_by_name(self, name: str) -> Optional[Employee]:
         return await self.employee_repository.get_by_name(name)
+
+    async def get_by_name_like(self, name: str) -> List[Employee]:
+        return await self.employee_repository.get_by_name_like(name)
+
+    async def get_all(self) -> Optional[List[Employee]]:
+        return await self.employee_repository.get_all()
