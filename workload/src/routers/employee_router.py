@@ -4,7 +4,8 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from src.contaier import MainContainer
-from src.dtos.employees import EmployeeWithWorkloadDTO, EmployeeDTO, CreateEmployee
+from src.dtos.employees import EmployeeWithWorkloadDTO, EmployeeDTO
+from src.dtos.util_dto import CreateEmployee
 from src.exceptions import UniqueConstraintViolationException, NotNullConstraintViolationException
 from src.models import Employee
 from src.services import EmployeeService

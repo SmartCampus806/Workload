@@ -5,7 +5,7 @@ class WorkloadDTO(Model):
     type: str
     workload: int
     groups: list[GroupDTO]
-    employee = EmployeeDTO
+    employee: EmployeeDTO
 
 
 class SmallLesson(Model):

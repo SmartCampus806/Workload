@@ -3,12 +3,6 @@ from typing import List, Optional
 
 from src.dtos.util_dto import Model, GroupDTO, EmployeeDTO
 
-
-class CreateEmployee(BaseModel):
-    name: str
-    available_workload: int
-    extra_workload: int
-
 class LessonDTO(Model):
     name: str
     year: str

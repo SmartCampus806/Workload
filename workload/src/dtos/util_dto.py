@@ -2,8 +2,11 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-from src.dtos.employees import CreateEmployee
 
+class CreateEmployee(BaseModel):
+    name: str
+    available_workload: int
+    extra_workload: int
 
 class Semester(str, Enum):
     autumn = 'Осенний'
