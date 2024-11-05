@@ -140,6 +140,8 @@ def main():
     df = delete_row_by_occurrence(df, "del", found)
     df = df.reset_index(drop=True)
 
+    df = df.fillna(0)
+
     df.to_excel("itog.xlsx")
     print(df.fill)
 

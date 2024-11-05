@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 
 
 class WorkloadService:
-    def __init__(self, database:Database, config: AppConfig):
+    def __init__(self, database: Database, config: AppConfig):
         self.database = database
         self.config = config
 
