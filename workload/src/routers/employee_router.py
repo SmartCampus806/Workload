@@ -28,14 +28,14 @@ async def create(employee: CreateEmployee,
                             detail='Не все обязательные поля введены, обратитесь в поддержку или проверьте введнные поля')
 
 
-@employee_router.get('/full', response_model=EmployeeWithWorkloadDTO | None | List[EmployeeWithWorkloadDTO])
+@employee_router.get('/full', response_model= None | List[EmployeeWithWorkloadDTO])
 @inject
 async def full(id: int = Query(default=None), name: str = Query(default=None),
                service: EmployeeService = Depends(
                    Provide[MainContainer.employee_service])) -> EmployeeWithWorkloadDTO | None | \
                                                                 list[EmployeeWithWorkloadDTO]:
     if id is not None:
-        res = await service.get_by_id(id=id)
+        res = [await service.get_by_id(id=id)]
     elif name is not None:
         res = await service.get_by_name(name)
     else:

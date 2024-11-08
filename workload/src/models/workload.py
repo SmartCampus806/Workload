@@ -7,6 +7,7 @@ from src.models.workload_group import group_workload_association
 
 class Workload(BaseWithId):
     __tablename__ = 'workloads'  # Используйте согласованную конвенцию именования
+    # __table_args__ = {'extend_existing': True}  # Добавление extend_existing
 
     type = Column(String(255), nullable=False)
     workload = Column(BigInteger, nullable=False)
@@ -23,4 +24,4 @@ class Workload(BaseWithId):
     )
 
     def __repr__(self):
-        return f'Workload<id={self.id}, type={self.type}, workload={self.workload}'
+        return f'{self.type}(workload={self.workload}, id={self.id})'

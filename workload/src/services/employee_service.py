@@ -34,3 +34,11 @@ class EmployeeService:
 
     async def get_all(self) -> Optional[List[Employee]]:
         return await self.employee_repository.get_all()
+
+    async def get_all_employees_with_real_workload(self) -> None:
+        employees = await self.get_all()
+        for empl in employees:
+            sum_hourse = 0
+            for workload in empl.workloads:
+                sum_hourse += workload.workload
+            print(f'{empl.name}: available horse = {empl.available_workload - sum_hourse}')

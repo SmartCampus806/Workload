@@ -16,5 +16,7 @@ COPY . .
 # Открываем порт для приложения
 EXPOSE 8001
 
+ENV run_mode=docker
+
 # Команда для запуска приложения с помощью Uvicorn
 CMD ["python", "main.py"]

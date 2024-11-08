@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import Column, BigInteger, String, CheckConstraint
 from sqlalchemy.orm import relationship
 
@@ -12,3 +14,6 @@ class Lesson(BaseWithId):
     faculty = Column(BigInteger, nullable=False)
 
     workloads = relationship("Workload", back_populates="lesson", lazy=False)
+
+    def __repr__(self):
+        return f'{self.name}'
