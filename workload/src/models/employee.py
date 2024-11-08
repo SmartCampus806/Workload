@@ -1,8 +1,8 @@
 from sqlalchemy import Column, BigInteger, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
+from src.models.workload_group import competency_employee_association
 from src.models import BaseWithId
-from sqladmin import ModelView
 
 
 class Employee(BaseWithId):
@@ -14,6 +14,12 @@ class Employee(BaseWithId):
 
     workloads = relationship("Workload", back_populates="employee", lazy=False)
 
+    competencies: Mapped[list['Competency']] = relationship(
+        'Competency',
+        secondary=competency_employee_association,
+        back_populates='employees',
+        lazy=False
+    )
     def __repr__(self):
         return f'{self.name}'
 
