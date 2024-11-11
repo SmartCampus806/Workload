@@ -10,7 +10,7 @@ class Lesson(BaseWithId):
 
     name = Column(String(255), nullable=False)
     year = Column(String(255), comment='2023/2024 или 2024/2025', nullable=False)
-    semestr = Column(String(255), CheckConstraint("semestr IN ('Осенний', 'весенний')"), nullable=False)
+    semestr = Column(BigInteger, CheckConstraint("semestr IN ('Осенний', 'Весенний')"), nullable=False)
     faculty = Column(BigInteger, nullable=False)
 
     workloads = relationship("Workload", back_populates="lesson", lazy=False)

@@ -99,8 +99,8 @@ def find_discipline_indexes(df):
 
 
 
-def main():
-    df = pd.read_excel("D:\Code\Meeting\workload\input.xls")
+def parse_raw_file(file_data):
+    df = pd.read_excel(file_data)
     df = df.map(clean_text).dropna(axis=1, how='all')
 
     found = find_occurrences_index_volume(df)
@@ -140,9 +140,4 @@ def main():
     df = delete_row_by_occurrence(df, "del", found)
     df = df.reset_index(drop=True)
 
-    df.to_excel("itog.xlsx")
-    print(df.fill)
-
-
-if __name__ == "__main__":
-    main()
+    return df
