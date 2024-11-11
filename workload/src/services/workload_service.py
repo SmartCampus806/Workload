@@ -9,7 +9,7 @@ from sqlalchemy.exc import NoResultFound
 
 
 class WorkloadService:
-    def __init__(self, database:Database, config: AppConfig):
+    def __init__(self, database: Database, config: AppConfig):
         self.database = database
         self.config = config
 
