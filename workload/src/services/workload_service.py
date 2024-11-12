@@ -154,7 +154,8 @@ class WorkloadService:
             lesson = Lesson(name='lesson1', year='2024/2025', semestr='Осенний', faculty=8)
             session.add(lesson)
 
-            workload = Workload(type='Лекция', workload=12, lesson=lesson, groups=[group, group2])
+            workload = Workload(type='Лекция', workload=12, lesson=lesson, groups=[group2])
+            workload.groups.append(group)
             session.add(workload)
 
             lesson.workloads = [workload]
