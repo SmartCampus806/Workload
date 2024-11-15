@@ -17,7 +17,7 @@ app.config['FLASK_ADMIN_SWATCH'] = 'simplex'
 
 class WorkloadAdmin(ModelView):
     column_list = ['lesson', 'type', 'groups', 'workload']
-    form_columns = ['type', 'workload', 'employee', 'lesson', 'groups', 'competencies']
+    form_columns = ['type', 'workload', 'lesson', 'groups', 'competencies']
     form_args = {
         'groups': {
             'widget': Select2Widget(multiple=True)
@@ -26,8 +26,8 @@ class WorkloadAdmin(ModelView):
 
 
 class LessonAdmin(ModelView):
-    column_list = ['name', 'year', 'semestr', 'faculty']
-    form_columns = ['name', 'year', 'semestr', 'faculty', 'workloads']
+    column_list = ['name', 'year', 'semestr','stream', 'faculty']
+    form_columns = ['name', 'year', 'semestr', 'stream','faculty', 'workloads']
     form_args = {
         'workloads': {
             'widget': Select2Widget(multiple=True)
@@ -37,7 +37,7 @@ class LessonAdmin(ModelView):
 
 class EmployeeAdmin(ModelView):
     column_list = ['name', 'available_workload', 'extra_workload', 'competencies']
-    form_columns = ['name', 'available_workload', 'extra_workload', 'workloads', 'competencies']
+    form_columns = ['name', 'available_workload', 'extra_workload', 'workload_containers', 'competencies']
 
 
 class GroupAdmin(ModelView):

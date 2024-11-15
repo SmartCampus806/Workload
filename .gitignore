@@ -5,8 +5,11 @@ __pycache__/
 *.pyd
 
 # Alembic
-alembic.ini
-versions/
+# Игнорировать все содержимое папок versions
+versions/**
+
+# Исключить сами папки versions из игнорирования
+!versions/
 
 # Директории виртуальных окружений
 env/

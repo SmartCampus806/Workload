@@ -18,3 +18,4 @@ Flask~=3.0.3
 psycopg2
 Flask-SQLAlchemy
 Flask-Admin
+psycopg2
