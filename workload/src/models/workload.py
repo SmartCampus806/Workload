@@ -13,9 +13,11 @@ class Workload(BaseWithId):
     workload = Column(BigInteger, nullable=False)
     employee_id = Column(BigInteger, ForeignKey('employees.id'), nullable=True)  # Исправленная ссылка
     lesson_id = Column(BigInteger, ForeignKey('Lesson.id'), nullable=False)
+    mega_workload_id = Column(BigInteger, ForeignKey('mega_workloads.id'), nullable=True)
 
     employee = relationship("Employee", back_populates="workloads", lazy=False)
     lesson = relationship("Lesson", back_populates="workloads", lazy=False)
+    mega_workload = relationship("MegaWorkload", back_populates="workloads", lazy=False)
     groups: Mapped[list['Groups']] = relationship(
         'Groups',
         secondary=group_workload_association,

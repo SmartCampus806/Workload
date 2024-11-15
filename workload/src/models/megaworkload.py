@@ -7,5 +7,5 @@ class MegaWorkload(BaseWithId):
     __tablename__ = 'mega_workloads'
 
     type = Column(String(255), CheckConstraint("type IN ('Индивидуальная', 'Практика', 'Лабораторная')"), nullable=True)
-    employee_name = Column(String(255), nullable=True)
+    employee_id = Column(BigInteger, nullable=True)
     workloads = relationship("Workload", back_populates="mega_workload", lazy=False)
