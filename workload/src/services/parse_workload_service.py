@@ -87,7 +87,7 @@ class WorkloadService:
 
         async with self.database.session_factory() as session:
 
-            df.columns.values[6] = "to_drop"
+            df.columns.values[5] = "to_drop"
             df = df.drop(df.columns[0], axis=1)
 
             df = df.sort_values(["Поток ", "Название предмета", "Семестр ", "Лекции нагрузка"],
