@@ -1,5 +1,5 @@
 
-from src.models import Groups, Workload, Lesson, MegaWorkload
+from src.models import Groups, Workload, Lesson, WorkloadContainer
 from src.utils.configuration import AppConfig
 from src.utils.database_manager import Database
 from sqlalchemy.future import select
@@ -7,7 +7,7 @@ from src.services.parser import parse_raw_file
 from sqlalchemy.exc import NoResultFound
 
 
-class WorkloadService:
+class ParseWorkloadService:
     def __init__(self, database: Database, config: AppConfig):
         self.database = database
         self.config = config
@@ -68,7 +68,7 @@ class WorkloadService:
         return lesson
 
     async def create_mega_workload(self, session, type_m: str, employee_name=None):
-        new_mega_workload = MegaWorkload(type=type_m, employee_name=employee_name)
+        new_mega_workload = WorkloadContainer(type=type_m, employee_name=employee_name)
         session.add(new_mega_workload)
         return new_mega_workload
 
@@ -140,25 +140,3 @@ class WorkloadService:
                                 workload.mega_workload = megaworkload_ind
 
             await session.commit()
-
-
-    async def test(self):
-        async with self.database.session_factory() as session:
-            group = Groups(name="test_group", students_count=12)
-            session.add(group)
-            group2 = Groups(name="test_group2", students_count=12)
-            session.add(group2)
-
-            lesson = Lesson(name='lesson1', year='2024/2025', semestr='Осенний', faculty=8)
-            session.add(lesson)
-
-            workload = Workload(type='Лекция', workload=12, lesson=lesson, groups=[group, group2])
-            session.add(workload)
-
-            lesson.workloads = [workload]
-            group.workloads =[workload]
-
-            await session.commit()
-
-
-

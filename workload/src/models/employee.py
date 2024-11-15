@@ -12,7 +12,7 @@ class Employee(BaseWithId):
     available_workload = Column(BigInteger, nullable=False)
     extra_workload = Column(BigInteger, nullable=False)
 
-    workloads = relationship("Workload", back_populates="employee", lazy=False)
+    workload_containers = relationship("WorkloadContainer", back_populates="employee", lazy=False)
 
     competencies: Mapped[list['Competency']] = relationship(
         'Competency',

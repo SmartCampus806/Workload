@@ -6,7 +6,7 @@ __pycache__/
 
 # Alembic
 alembic.ini
-versions/
+versions/*
 
 # Директории виртуальных окружений
 env/
