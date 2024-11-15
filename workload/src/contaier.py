@@ -4,7 +4,7 @@ from src.repositories import EmployeeRepository, WorkloadRepository, LessonRepos
 from src.services import EmployeeService
 from src.services.group_service import GroupService
 from src.services.lesson_service import LessonService
-from src.services.workload_service import WorkloadService
+from src.services.parse_workload_service import WorkloadService
 from src.services.workload_service2 import WorkloadService2
 from src.utils.configuration import Config
 from src.utils.database_manager import Database

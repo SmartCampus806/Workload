@@ -5,7 +5,7 @@ from sqlalchemy import select
 from src.contaier import MainContainer
 from src.models import Lesson
 from src.services import EmployeeService
-from src.services.workload_service import WorkloadService
+from src.services.parse_workload_service import WorkloadService
 from src.utils.database_manager import Database
 
 load_files_router = APIRouter()

@@ -3,7 +3,7 @@ from src.models import Groups, Workload, Lesson, MegaWorkload
 from src.utils.configuration import AppConfig
 from src.utils.database_manager import Database
 from sqlalchemy.future import select
-from src.raw_file_parsing.parser import parse_raw_file
+from src.services.parser import parse_raw_file
 from sqlalchemy.exc import NoResultFound
 
 
