@@ -89,6 +89,7 @@ class ParseWorkloadService:
             
             # df = df.drop(df.columns[0], axis=1)
             df.columns.values[5] = "to_drop"
+            df = df.fillna(0)
 
             df = df.sort_values(["Поток ", "Название предмета", "Семестр ", "Лекции нагрузка"],
                                 ascending=[True, True, True, False])
