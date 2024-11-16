@@ -67,8 +67,8 @@ class ParseWorkloadService:
 
         return lesson
 
-    async def create_mega_workload(self, session, type_m: str, employee_name=None):
-        new_mega_workload = WorkloadContainer(type=type_m, employee_name=employee_name)
+    async def create_mega_workload(self, session, type_m: str, employee_id=None):
+        new_mega_workload = WorkloadContainer(type=type_m, employee_id=employee_id)
         session.add(new_mega_workload)
         return new_mega_workload
 
