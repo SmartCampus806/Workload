@@ -104,19 +104,25 @@ class ParseWorkloadService:
                         group = await self.create_group(session, group_name, number_of_students)
                     else:
                         group = await self.find_group(session, group_name)
+                    # print('------------------------------------------------------------------------------')
+                    # print(group)
+                    # print('------------------------------------------------------------------------------')
 
                     discipline_name = row['Название предмета']
                     semestr = row['Семестр ']
                     faculty = row['Факультет']
                     stream = str(row['Поток '])
-
+                    # print('------------------------------------------------------------------------------')
+                    # print(await self.lesson_exists(session, stream, discipline_name, semestr, faculty))
+                    # print('------------------------------------------------------------------------------')
                     if not await self.lesson_exists(session, stream, discipline_name, semestr, faculty):
+
                         lesson = await self.create_lesson(session, stream, discipline_name, semestr, faculty)
                         workload_lection = await self.create_workload(session, type_w="Лекция",
                                                                       workload=row["Лекции нагрузка"],
                                                                       lesson=lesson, groups=[group])
                         megaworkload_ind = await self.create_mega_workload(session, type_m="Индивидуальная")
-                        workload_lection.mega_workload = megaworkload_ind
+                        workload_lection.workload_container = megaworkload_ind
 
                     else:
                         workload_lection.groups.append(group)
@@ -130,14 +136,14 @@ class ParseWorkloadService:
                             if type_of_single_workload[0] == "Практическое занятие":
                                 type_m = "Практика"
                                 megaworkload_pract = await self.create_mega_workload(session, type_m)
-                                workload.mega_workload = megaworkload_pract
+                                workload.workload_container = megaworkload_pract
 
                             elif type_of_single_workload[0] == "Лабораторная работа":
                                 type_m = "Лабораторная"
                                 megaworkload_lab = await self.create_mega_workload(session, type_m)
-                                workload.mega_workload = megaworkload_lab
+                                workload.workload_container = megaworkload_lab
 
                             else:
-                                workload.mega_workload = megaworkload_ind
+                                workload.workload_container = megaworkload_ind
 
             await session.commit()
