@@ -67,8 +67,8 @@ class ParseWorkloadService:
 
         return lesson
 
-    async def create_mega_workload(self, session, type_m: str, employee_name=None):
-        new_mega_workload = WorkloadContainer(type=type_m, employee_name=employee_name)
+    async def create_mega_workload(self, session, type_m: str, employee_id=None):
+        new_mega_workload = WorkloadContainer(type=type_m, employee_id=employee_id)
         session.add(new_mega_workload)
         return new_mega_workload
 
@@ -86,14 +86,15 @@ class ParseWorkloadService:
         df = parse_raw_file(file_data)
 
         async with self.database.session_factory() as session:
-
-            df.columns.values[5] = "to_drop"
+            
             # df = df.drop(df.columns[0], axis=1)
+            df.columns.values[5] = "to_drop"
+            df = df.fillna(0)
 
             df = df.sort_values(["Поток ", "Название предмета", "Семестр ", "Лекции нагрузка"],
                                 ascending=[True, True, True, False])
             df = df.reset_index(drop=True)
-            # print(df.columns.values)
+
             for index, row in df.iterrows():
                 if row['Поток '] != 0:
 
@@ -105,7 +106,7 @@ class ParseWorkloadService:
                         group = await self.find_group(session, group_name)
 
                     discipline_name = row['Название предмета']
-                    semestr = int(row['Семестр '])
+                    semestr = row['Семестр ']
                     faculty = row['Факультет']
                     stream = str(row['Поток '])
 
