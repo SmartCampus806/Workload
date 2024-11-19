@@ -5,6 +5,7 @@ from src.utils.database_manager import Database
 from sqlalchemy.future import select
 from src.services.parser import parse_raw_file
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy import text
 
 
 class ParseWorkloadService:
@@ -82,16 +83,24 @@ class ParseWorkloadService:
         session.add(new_workload)
         return new_workload
 
+    async def clear_tables(self, session):
+        await session.execute(text("DELETE FROM group_workload"))
+        await session.execute(text("DELETE FROM workloads"))
+        await session.execute(text("DELETE FROM groups"))
+        await session.execute(text("DELETE FROM workload_container"))
+        await session.execute(text('DELETE FROM "Lesson"'))
+
     async def parse_and_save_workload(self, file_data):
         df = parse_raw_file(file_data)
 
         async with self.database.session_factory() as session:
-            
+
+            await self.clear_tables(session)
             # df = df.drop(df.columns[0], axis=1)
             df.columns.values[5] = "to_drop"
             df = df.fillna(0)
 
-            df = df.sort_values(["Поток ", "Название предмета", "Семестр ", "Лекции нагрузка"],
+            df = df.sort_values(["Поток ", "Название предмета", "Семестр ", "Лекции план"],
                                 ascending=[True, True, True, False])
             df = df.reset_index(drop=True)
 
@@ -104,22 +113,17 @@ class ParseWorkloadService:
                         group = await self.create_group(session, group_name, number_of_students)
                     else:
                         group = await self.find_group(session, group_name)
-                    # print('------------------------------------------------------------------------------')
-                    # print(group)
-                    # print('------------------------------------------------------------------------------')
 
                     discipline_name = row['Название предмета']
                     semestr = row['Семестр ']
                     faculty = row['Факультет']
                     stream = str(row['Поток '])
-                    # print('------------------------------------------------------------------------------')
-                    # print(await self.lesson_exists(session, stream, discipline_name, semestr, faculty))
-                    # print('------------------------------------------------------------------------------')
+
                     if not await self.lesson_exists(session, stream, discipline_name, semestr, faculty):
 
                         lesson = await self.create_lesson(session, stream, discipline_name, semestr, faculty)
                         workload_lection = await self.create_workload(session, type_w="Лекция",
-                                                                      workload=row["Лекции нагрузка"],
+                                                                      workload=row["Лекции план"],
                                                                       lesson=lesson, groups=[group])
                         megaworkload_ind = await self.create_mega_workload(session, type_m="Индивидуальная")
                         workload_lection.workload_container = megaworkload_ind
