@@ -68,8 +68,8 @@ class ParseWorkloadService:
 
         return lesson
 
-    async def create_mega_workload(self, session, type_m: str, employee_id=None):
-        new_mega_workload = WorkloadContainer(type=type_m, employee_id=employee_id)
+    async def create_mega_workload(self, session, employee_id=None):
+        new_mega_workload = WorkloadContainer(employee_id=employee_id)
         session.add(new_mega_workload)
         return new_mega_workload
 
@@ -93,10 +93,9 @@ class ParseWorkloadService:
     async def parse_and_save_workload(self, file_data):
         df = parse_raw_file(file_data)
 
-        async with self.database.session_factory() as session:
+        async with (self.database.session_factory() as session):
 
             await self.clear_tables(session)
-            # df = df.drop(df.columns[0], axis=1)
             df.columns.values[5] = "to_drop"
             df = df.fillna(0)
 
@@ -125,7 +124,7 @@ class ParseWorkloadService:
                         workload_lection = await self.create_workload(session, type_w="Лекция",
                                                                       workload=row["Лекции план"],
                                                                       lesson=lesson, groups=[group])
-                        megaworkload_ind = await self.create_mega_workload(session, type_m="Индивидуальная")
+                        megaworkload_ind = await self.create_mega_workload(session)
                         workload_lection.workload_container = megaworkload_ind
 
                     else:
@@ -134,18 +133,13 @@ class ParseWorkloadService:
                     for type_of_single_workload in self.general_workloads + self.individual_workloads:
                         if row[type_of_single_workload[1]] != 0:
                             workload = await self.create_workload(session, type_w=type_of_single_workload[0],
-                                                             workload=row[type_of_single_workload[1]], lesson=lesson,
-                                                             groups=[group])
+                                                                  workload=row[type_of_single_workload[1]],
+                                                                  lesson=lesson,
+                                                                  groups=[group])
 
-                            if type_of_single_workload[0] == "Практическое занятие":
-                                type_m = "Практика"
-                                megaworkload_pract = await self.create_mega_workload(session, type_m)
-                                workload.workload_container = megaworkload_pract
-
-                            elif type_of_single_workload[0] == "Лабораторная работа":
-                                type_m = "Лабораторная"
-                                megaworkload_lab = await self.create_mega_workload(session, type_m)
-                                workload.workload_container = megaworkload_lab
+                            if type_of_single_workload[0] == "Практическое занятие" or type_of_single_workload[0] == "Лабораторная работа":
+                                megaworkload_pract_lab = await self.create_mega_workload(session)
+                                workload.workload_container = megaworkload_pract_lab
 
                             else:
                                 workload.workload_container = megaworkload_ind
