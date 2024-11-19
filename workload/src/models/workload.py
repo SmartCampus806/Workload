@@ -30,4 +30,4 @@ class Workload(BaseWithId):
     )
 
     def __repr__(self):
-        return f'{self.type}(workload={self.workload}, id={self.id})'
+        return f'{self.type}(lesson={self.lesson.name}, workload={self.workload})'

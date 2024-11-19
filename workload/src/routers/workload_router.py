@@ -1,6 +1,7 @@
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException
 
+from src.services import WorkloadService
 from src.contaier import MainContainer
 from src.dtos.employees import EmployeeDTO, WorkloadDTO
 from src.dtos.create_dtos import CreateWorkload
@@ -28,3 +29,8 @@ async def create(workload: CreateWorkload,
     except ForeignKeyViolationException as ex:
         raise HTTPException(status_code=400, detail='Не удалось установить связи между нагрузкой и преподавателем или предметом, обратитесть в поддержку')
 
+
+@workload_router.get('/')
+@inject
+async def create(service: WorkloadService = Depends(Provide[MainContainer.workload_service])):
+    return await service.get_workload_containers()

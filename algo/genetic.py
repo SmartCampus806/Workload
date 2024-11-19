@@ -2,7 +2,7 @@ import random
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 import time
-from algo.models import Teacher, Subject, Processor
+from .models import Teacher, Subject, Processor
 
 
 class GeneticAlgorithmProcessor(Processor):

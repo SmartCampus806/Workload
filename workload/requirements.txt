@@ -19,3 +19,4 @@ psycopg2
 Flask-SQLAlchemy
 Flask-Admin
 psycopg2
+strawberry-graphql

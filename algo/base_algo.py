@@ -2,7 +2,7 @@ import random
 import time
 from typing import List, Tuple
 
-from algo.models import Subject, Teacher, Processor
+from .models import Subject, Teacher, Processor
 
 
 class AlgoProcessor(Processor):
