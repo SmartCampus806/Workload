@@ -4,7 +4,6 @@ from src.utils.configuration import AppConfig
 from src.utils.database_manager import Database
 from sqlalchemy.future import select
 from src.services.parser import parse_raw_file
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy import text
 
 
@@ -27,24 +26,25 @@ class ParseWorkloadService:
     async def create_group(self, session, name: str, number_of_students: int):
         new_group = Groups(name=name, students_count=number_of_students)
         session.add(new_group)
+        await session.flush()
         return new_group
 
     async def find_group(self, session, name: str):
         stmt = select(Groups).filter_by(name=name)
         result = await session.execute(stmt)
         group = result.scalars().first()
-
         return group
 
-    async def find_lesson(self, session, stream: str, name: str, semestr: int, faculty: str) -> bool:
+    async def find_lesson(self, session, stream: str, name: str, semestr: int, faculty: int) -> bool:
         stmt = select(Lesson).filter_by(stream=stream, name=name, semestr=semestr, faculty=faculty)
         result = await session.execute(stmt)
         lesson = result.scalars().first()
         return lesson
 
-    async def create_lesson(self, session, stream: str, name: str, semestr: int, faculty: str, year="2024/2025"):
+    async def create_lesson(self, session, stream: str, name: str, semestr: int, faculty: int, year="2024/2025"):
         new_lesson = Lesson(stream=stream, name=name, year=year, semestr=semestr, faculty=faculty)
         session.add(new_lesson)
+        await session.flush()
         return new_lesson
 
     async def create_mega_workload(self, session, employee_id=None):
@@ -94,7 +94,7 @@ class ParseWorkloadService:
 
                     discipline_name = row['Название предмета']
                     semestr = row['Семестр ']
-                    faculty = row['Факультет']
+                    faculty = int(row['Факультет'].replace("№", '').split()[-1])
                     stream = str(row['Поток '])
 
                     if not await self.find_lesson(session, stream, discipline_name, semestr, faculty):
