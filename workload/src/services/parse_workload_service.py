@@ -17,15 +17,12 @@ class ParseWorkloadService:
                                   ("Лабораторная работа", "Лабораторные работы нагрузка")]
 
         self.individual_workloads = [("Курсовая работа", "Курсовая работа "),
-                                    ("Курсовой проект", "Курсовой проект "),
-                                    ("Консультация", "Конс "),
-                                    ("Рейтинг", "Рейтинг "),
-                                    ("Зачёт", "Зачёт "),
-                                    ("Экзамен", "Экзамен ")]
-
-    async def group_exists(self, session, name: str) -> bool:
-        result = await session.execute(select(Groups).filter(Groups.name == name))
-        return result.scalars().first() is not None
+                                     ("Курсовой проект", "Курсовой проект "),
+                                     ("Консультация", "Конс "),
+                                     ("Рейтинг", "Рейтинг "),
+                                     ("Зачёт", "Зачёт "),
+                                     ("Экзамен", "Экзамен ")]
+        self.students_workloads = [()]
 
     async def create_group(self, session, name: str, number_of_students: int):
         new_group = Groups(name=name, students_count=number_of_students)
@@ -33,40 +30,22 @@ class ParseWorkloadService:
         return new_group
 
     async def find_group(self, session, name: str):
-        group = await session.execute(select(Groups).filter(Groups.name == name))
-        group = group.scalars().first()
-
-        if group is None:
-            raise NoResultFound(f"Группа с названием '{name}' не найдена.")
+        stmt = select(Groups).filter_by(name=name)
+        result = await session.execute(stmt)
+        group = result.scalars().first()
 
         return group
 
-    async def lesson_exists(self, session, stream: str, name: str, semestr: int, faculty: str) -> bool:
-        result = await session.execute(select(Lesson).filter(
-            Lesson.stream == stream,
-            Lesson.name == name,
-            Lesson.semestr == semestr,
-            Lesson.faculty == faculty
-        ))
-        return result.scalars().first() is not None
+    async def find_lesson(self, session, stream: str, name: str, semestr: int, faculty: str) -> bool:
+        stmt = select(Lesson).filter_by(stream=stream, name=name, semestr=semestr, faculty=faculty)
+        result = await session.execute(stmt)
+        lesson = result.scalars().first()
+        return lesson
 
     async def create_lesson(self, session, stream: str, name: str, semestr: int, faculty: str, year="2024/2025"):
         new_lesson = Lesson(stream=stream, name=name, year=year, semestr=semestr, faculty=faculty)
         session.add(new_lesson)
         return new_lesson
-
-    async def find_lesson(self, session, stream: str, name: str, semestr: int, faculty: str):
-        lesson = await session.execute(select(Lesson).filter(
-            Lesson.stream == stream,
-            Lesson.name == name,
-            Lesson.semestr == semestr,
-            Lesson.faculty == faculty))
-        lesson = lesson.scalars().first()
-
-        if lesson is None:
-            raise NoResultFound(f"Дисциплина с названием '{name}' не найдена.")
-
-        return lesson
 
     async def create_mega_workload(self, session, employee_id=None):
         new_mega_workload = WorkloadContainer(employee_id=employee_id)
@@ -108,7 +87,7 @@ class ParseWorkloadService:
 
                     group_name = row['Название']
                     number_of_students = row['Студентов ']
-                    if not await self.group_exists(session, group_name):
+                    if not await self.find_group(session, group_name):
                         group = await self.create_group(session, group_name, number_of_students)
                     else:
                         group = await self.find_group(session, group_name)
@@ -118,7 +97,7 @@ class ParseWorkloadService:
                     faculty = row['Факультет']
                     stream = str(row['Поток '])
 
-                    if not await self.lesson_exists(session, stream, discipline_name, semestr, faculty):
+                    if not await self.find_lesson(session, stream, discipline_name, semestr, faculty):
 
                         lesson = await self.create_lesson(session, stream, discipline_name, semestr, faculty)
                         workload_lection = await self.create_workload(session, type_w="Лекция",
