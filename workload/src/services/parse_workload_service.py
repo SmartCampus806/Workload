@@ -35,14 +35,14 @@ class ParseWorkloadService:
         group = result.scalars().first()
         return group
 
-    async def find_lesson(self, session, stream: str, name: str, semestr: int, faculty: int) -> bool:
-        stmt = select(Lesson).filter_by(stream=stream, name=name, semestr=semestr, faculty=faculty)
+    async def find_lesson(self, session, stream: str, name: str, semester: int, faculty: int) -> bool:
+        stmt = select(Lesson).filter_by(stream=stream, name=name, semester=semester, faculty=faculty)
         result = await session.execute(stmt)
         lesson = result.scalars().first()
         return lesson
 
-    async def create_lesson(self, session, stream: str, name: str, semestr: int, faculty: int, year="2024/2025"):
-        new_lesson = Lesson(stream=stream, name=name, year=year, semestr=semestr, faculty=faculty)
+    async def create_lesson(self, session, stream: str, name: str, semester: int, faculty: int, year="2024/2025"):
+        new_lesson = Lesson(stream=stream, name=name, year=year, semester=semester, faculty=faculty)
         session.add(new_lesson)
         await session.flush()
         return new_lesson
@@ -93,13 +93,13 @@ class ParseWorkloadService:
                         group = await self.find_group(session, group_name)
 
                     discipline_name = row['Название предмета']
-                    semestr = row['Семестр ']
+                    semester = row['Семестр ']
                     faculty = int(row['Факультет'].replace("№", '').split()[-1])
                     stream = str(row['Поток '])
 
-                    if not await self.find_lesson(session, stream, discipline_name, semestr, faculty):
+                    if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
 
-                        lesson = await self.create_lesson(session, stream, discipline_name, semestr, faculty)
+                        lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
                         workload_lection = await self.create_workload(session, type_w="Лекция",
                                                                       workload=row["Лекции план"],
                                                                       lesson=lesson, groups=[group])
