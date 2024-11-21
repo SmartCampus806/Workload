@@ -7,8 +7,8 @@ import uvicorn
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
-from src.models import Employee
-from src.routers import load_files_router, employee_router, workload_router, lesson_router
+from src.models import Employee, WorkloadContainer
+from src.routers import load_files_router, employee_router, workload_router, lesson_router, export_router
 import ast
 
 app = FastAPI()
@@ -17,13 +17,14 @@ app.include_router(load_files_router, prefix='/load')
 app.include_router(employee_router, prefix='/employee')
 app.include_router(workload_router, prefix='/workload')
 app.include_router(lesson_router, prefix='/lesson')
+app.include_router(export_router, prefix='/export')
 
 import strawberry
 from dependency_injector.wiring import Provide
 from fastapi.params import Depends
 
 from src.contaier import MainContainer
-from src.graph_ql.types import EmployeeQ
+from src.graph_ql.types import EmployeeQ, WorkloadContainerQ
 from src.services import EmployeeService2
 
 def get_employees_service(employee_service: EmployeeService2 = Depends(Provide[MainContainer.employee_service_2])):
@@ -34,10 +35,11 @@ def get_employees_service(employee_service: EmployeeService2 = Depends(Provide[M
 class Query:
     @strawberry.field
     async def employees(self, filters: Optional[str]) -> list[EmployeeQ] | None:
-        if filters is not None:
-            return await get_employees_service().search(Employee, ast.literal_eval(filters))
-        else:
-            return None
+        return await get_employees_service().search(Employee, ast.literal_eval(filters))
+
+    @strawberry.field
+    async def workloads(self, filters: Optional[str]) -> list[WorkloadContainerQ] | None:
+        return await get_employees_service().search(WorkloadContainer, ast.literal_eval(filters))
 
 # Схема для GraphQL
 schema = strawberry.Schema(query=Query)

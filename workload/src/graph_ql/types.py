@@ -1,5 +1,5 @@
 import strawberry
-from typing import List
+from typing import List, Optional
 
 
 @strawberry.type
@@ -57,7 +57,7 @@ class WorkloadQ:
 class WorkloadContainerQ:
     id: int
     type: str
-    employee: EmployeeQ
+    employee: Optional[EmployeeQ]
     workloads: List[WorkloadQ]
 
     @strawberry.field

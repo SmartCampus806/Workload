@@ -2,25 +2,25 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, Mapped
 
 from src.models import BaseWithId
-from src.models.workload_group import competency_workload_association, \
+from src.models.workload_group import competency_lesson_association, \
     competency_employee_association
 
 
 class Competency(BaseWithId):
-    __tablename__ = 'competencies'
+    __tablename__ = 'competences'
     name = Column(String(64), nullable=False)
 
-    workloads: Mapped[list['Workload']] = relationship(
-        'Workload',
-        secondary=competency_workload_association,
-        back_populates='competencies',
+    lessons: Mapped[list['Lesson']] = relationship(
+        'Lesson',
+        secondary=competency_lesson_association,
+        back_populates='competences',
         lazy=False
     )
 
     employees: Mapped[list['Employee']] = relationship(
         'Employee',
         secondary=competency_employee_association,
-        back_populates='competencies',
+        back_populates='competences',
         lazy=False
     )
     def __repr__(self):

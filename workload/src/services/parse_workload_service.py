@@ -67,7 +67,7 @@ class ParseWorkloadService:
         await session.execute(text("DELETE FROM workloads"))
         await session.execute(text("DELETE FROM groups"))
         await session.execute(text("DELETE FROM workload_container"))
-        await session.execute(text('DELETE FROM "Lesson"'))
+        await session.execute(text('DELETE FROM "lessons"'))
 
     async def parse_and_save_workload(self, file_data):
         df = parse_raw_file(file_data)

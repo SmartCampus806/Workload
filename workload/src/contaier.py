@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 
 from src.repositories import EmployeeRepository, WorkloadRepository, LessonRepository, GroupRepository
-from src.services import EmployeeService, ParseEmployeeService, WorkloadService, EmployeeService2
+from src.services import EmployeeService, ParseEmployeeService, WorkloadService, EmployeeService2, ExportService
 from src.services.group_service import GroupService
 from src.services.lesson_service import LessonService
 from src.services.parse_workload_service import ParseWorkloadService
@@ -30,4 +30,4 @@ class MainContainer(containers.DeclarativeContainer):
     lesson_service = providers.Factory(LessonService, lesson_repository, logger)
     parse_employee_service = providers.Factory(ParseEmployeeService, employee_repository, logger)
     employee_service_2 = providers.Factory(EmployeeService2, database, logger)
-
+    export_service = providers.Factory(ExportService, database)

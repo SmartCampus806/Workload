@@ -25,7 +25,7 @@ class Employee(BaseWithId):
 
     workload_containers = relationship("WorkloadContainer", back_populates="employee", lazy=False)
 
-    competencies: Mapped[list['Competency']] = relationship(
+    competences: Mapped[list['Competency']] = relationship(
         'Competency',
         secondary=competency_employee_association,
         back_populates='employees',

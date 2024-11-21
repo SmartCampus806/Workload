@@ -37,6 +37,8 @@ class WorkloadContainer(BaseWithId):
                 return 'Практическое занятие'
             elif workload.type == 'Лекционное занятие':
                 return 'Лекционное занятие'
+            elif workload.type == 'Лабораторная работа':
+                return 'Лабораторная работа'
             else:
                 continue
         return None
