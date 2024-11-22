@@ -116,11 +116,14 @@ class ParseWorkloadService:
                                                                   lesson=lesson,
                                                                   groups=[group])
 
-                            if type_of_single_workload[0] in self.general_workloads:
+                            general_workloads_list = [elem[0] for elem in self.general_workloads]
+                            individual_workloads_list = [elem[0] for elem in self.individual_workloads]
+
+                            if type_of_single_workload[0] in general_workloads_list:
                                 megaworkload_gen = await self.create_mega_workload(session)
                                 workload.workload_container = megaworkload_gen
 
-                            elif type_of_single_workload[0] in self.individual_workloads:
+                            elif type_of_single_workload[0] in individual_workloads_list:
                                 workload.workload_container = megaworkload_ind
 
             await session.commit()
