@@ -13,11 +13,11 @@ class ParseWorkloadService:
         self.config = config
 
         self.general_workloads = [("Практическое занятие", "Практические занятия нагрузка"),
-                                  ("Лабораторная работа", "Лабораторные работы нагрузка")]
+                                  ("Лабораторная работа", "Лабораторные работы нагрузка"),
+                                  ("Курсовая работа", "Курсовая работа "),
+                                  ("Курсовой проект", "Курсовой проект ")]
 
-        self.individual_workloads = [("Курсовая работа", "Курсовая работа "),
-                                     ("Курсовой проект", "Курсовой проект "),
-                                     ("Консультация", "Конс "),
+        self.individual_workloads = [("Консультация", "Конс "),
                                      ("Рейтинг", "Рейтинг "),
                                      ("Зачёт", "Зачёт "),
                                      ("Экзамен", "Экзамен ")]
@@ -116,11 +116,11 @@ class ParseWorkloadService:
                                                                   lesson=lesson,
                                                                   groups=[group])
 
-                            if type_of_single_workload[0] == "Практическое занятие" or type_of_single_workload[0] == "Лабораторная работа":
-                                megaworkload_pract_lab = await self.create_mega_workload(session)
-                                workload.workload_container = megaworkload_pract_lab
+                            if type_of_single_workload[0] in self.general_workloads:
+                                megaworkload_gen = await self.create_mega_workload(session)
+                                workload.workload_container = megaworkload_gen
 
-                            else:
+                            elif type_of_single_workload[0] in self.individual_workloads:
                                 workload.workload_container = megaworkload_ind
 
             await session.commit()
