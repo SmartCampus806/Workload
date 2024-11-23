@@ -21,7 +21,11 @@ class ParseWorkloadService:
                                      ("Рейтинг", "Рейтинг "),
                                      ("Зачёт", "Зачёт "),
                                      ("Экзамен", "Экзамен ")]
-        self.students_workloads = [()]
+
+        self.students_workloads = [("Самостоятельная Работа", "СРС "),
+                                   ("Практика", "Практика "),
+                                   ("Диплом", "Диплом "),
+                                   ("Прочее", "Прочее ")]
 
     async def create_group(self, session, name: str, number_of_students: int):
         new_group = Groups(name=name, students_count=number_of_students)
@@ -83,20 +87,19 @@ class ParseWorkloadService:
             df = df.reset_index(drop=True)
 
             for index, row in df.iterrows():
+                group_name = row['Название']
+                number_of_students = row['Студентов ']
+                if not await self.find_group(session, group_name):
+                    group = await self.create_group(session, group_name, number_of_students)
+                else:
+                    group = await self.find_group(session, group_name)
+
+                discipline_name = row['Название предмета']
+                semester = row['Семестр ']
+                faculty = int(row['Факультет'].replace("№", '').split()[-1])
+                stream = str(row['Поток '])
+
                 if row['Поток '] != 0:
-
-                    group_name = row['Название']
-                    number_of_students = row['Студентов ']
-                    if not await self.find_group(session, group_name):
-                        group = await self.create_group(session, group_name, number_of_students)
-                    else:
-                        group = await self.find_group(session, group_name)
-
-                    discipline_name = row['Название предмета']
-                    semester = row['Семестр ']
-                    faculty = int(row['Факультет'].replace("№", '').split()[-1])
-                    stream = str(row['Поток '])
-
                     if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
 
                         lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
@@ -125,5 +128,21 @@ class ParseWorkloadService:
 
                             elif type_of_single_workload[0] in individual_workloads_list:
                                 workload.workload_container = megaworkload_ind
+
+                elif row['Поток '] == 0:
+                    if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
+                        lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
+                    else:
+                        lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty)
+
+                    for type_of_single_workload in self.general_workloads + self.individual_workloads:
+                        if row[type_of_single_workload[1]] != 0:
+                            megaworkload_zero_stream = await self.create_mega_workload(session)
+                            workload_zero_stream = await self.create_workload(session,
+                                                                              type_w=type_of_single_workload[0],
+                                                                              workload=row[type_of_single_workload[1]],
+                                                                              lesson=lesson,
+                                                                              groups=[group])
+                            workload_zero_stream.workload_container = megaworkload_zero_stream
 
             await session.commit()
