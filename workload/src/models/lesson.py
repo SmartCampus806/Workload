@@ -11,7 +11,7 @@ class Lesson(BaseWithId):
 
     stream = Column(String(255), nullable=False)
     name = Column(String(255), nullable=False)
-    year = Column(String(255), comment='2023/2024 или 2024/2025', nullable=False)
+    year = Column(String(255), nullable=False)
     semester = Column(BigInteger, nullable=False)
     faculty = Column(BigInteger, nullable=False)
 

@@ -5,6 +5,7 @@ from src.utils.database_manager import Database
 from sqlalchemy.future import select
 from src.services.parser import parse_raw_file
 from sqlalchemy import text
+from datetime import datetime
 
 
 class ParseWorkloadService:
@@ -27,6 +28,15 @@ class ParseWorkloadService:
                                    ("Диплом", "Диплом "),
                                    ("Прочее", "Прочее ")]
 
+    def get_academic_year(self):
+        now = datetime.now()
+        current_year = now.year
+        # Учебный год начинается 1 сентября и заканчивается 31 июля
+        if now.month >= 8:  # Август и позже
+            return f"{current_year}/{current_year + 1}"
+        else:  # Январь - Июль
+            return f"{current_year - 1}/{current_year}"
+
     async def create_group(self, session, name: str, number_of_students: int):
         new_group = Groups(name=name, students_count=number_of_students)
         session.add(new_group)
@@ -45,7 +55,8 @@ class ParseWorkloadService:
         lesson = result.scalars().first()
         return lesson
 
-    async def create_lesson(self, session, stream: str, name: str, semester: int, faculty: int, year="2024/2025"):
+    async def create_lesson(self, session, stream: str, name: str, semester: int, faculty: int):
+        year = self.get_academic_year()
         new_lesson = Lesson(stream=stream, name=name, year=year, semester=semester, faculty=faculty)
         session.add(new_lesson)
         await session.flush()
