@@ -1,3 +1,4 @@
+import time
 
 from src.models import Groups, Workload, Lesson, WorkloadContainer
 from src.utils.configuration import AppConfig
@@ -57,7 +58,7 @@ class ParseWorkloadService:
 
     async def create_lesson(self, session, stream: str, name: str, semester: int, faculty: int):
         year = self.get_academic_year()
-        new_lesson = Lesson(stream=stream, name=name, year=year, semester=semester, faculty=faculty)
+        new_lesson = Lesson(stream=stream, name=name, year=year, semester=semester, faculty=faculty, tm=True)
         session.add(new_lesson)
         await session.flush()
         return new_lesson
@@ -80,28 +81,34 @@ class ParseWorkloadService:
     async def clear_tables(self, session):
         await session.execute(text("DELETE FROM group_workload"))
         await session.execute(text("DELETE FROM workloads"))
-        await session.execute(text("DELETE FROM groups"))
         await session.execute(text("DELETE FROM workload_container"))
-        await session.execute(text('DELETE FROM "lessons"'))
+        await session.execute(text('UPDATE "lessons" SET tm = false'))
 
     async def parse_and_save_workload(self, file_data):
         df = parse_raw_file(file_data)
 
         async with (self.database.session_factory() as session):
-
             await self.clear_tables(session)
+
             df.columns.values[5] = "to_drop"
             df = df.fillna(0)
-
             df = df.sort_values(["Поток ", "Название предмета", "Семестр ", "Лекции план"],
                                 ascending=[True, True, True, False])
             df = df.reset_index(drop=True)
 
+            groups_set = set()
+            lessons_set = set()
+
             for index, row in df.iterrows():
                 group_name = row['Название']
                 number_of_students = row['Студентов ']
-                if not await self.find_group(session, group_name):
-                    group = await self.create_group(session, group_name, number_of_students)
+
+                if group_name not in groups_set:
+                    if not await self.find_group(session, group_name):
+                        group = await self.create_group(session, group_name, number_of_students)
+                    else:
+                        group = await self.find_group(session, group_name)
+                    groups_set.add(group_name)
                 else:
                     group = await self.find_group(session, group_name)
 
@@ -110,10 +117,17 @@ class ParseWorkloadService:
                 faculty = int(row['Факультет'].replace("№", '').split()[-1])
                 stream = str(row['Поток '])
 
-                if row['Поток '] != 0:
-                    if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
+                check_lesson = (stream, discipline_name, semester, faculty)
 
-                        lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
+                if row['Поток '] != 0:
+                    if check_lesson not in lessons_set:
+                        if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
+                            lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
+                        else:
+                            lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty)
+                            lesson.tm = True
+                        lessons_set.add(check_lesson)
+
                         workload_lection = await self.create_workload(session, type_w="Лекция",
                                                                       workload=row["Лекции план"],
                                                                       lesson=lesson, groups=[group])
@@ -145,6 +159,7 @@ class ParseWorkloadService:
                         lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
                     else:
                         lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty)
+                        lesson.tm = True
 
                     for type_of_single_workload in self.general_workloads + self.individual_workloads:
                         if row[type_of_single_workload[1]] != 0:
@@ -156,4 +171,8 @@ class ParseWorkloadService:
                                                                               groups=[group])
                             workload_zero_stream.workload_container = megaworkload_zero_stream
 
+            await session.execute(text('DELETE FROM "lessons" WHERE tm = false'))
             await session.commit()
+
+# TODO добавить проверку на удаление лессонов только текущего года
+# TODO не добавлять ворклоад лекции если лекционная нагрузка 0 часов

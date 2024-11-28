@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Column, BigInteger, String, CheckConstraint
+from sqlalchemy import Column, BigInteger, String, CheckConstraint, Boolean
 from sqlalchemy.orm import relationship, Mapped
 
 from src.models.workload_group import competency_lesson_association
@@ -14,6 +14,7 @@ class Lesson(BaseWithId):
     year = Column(String(255), nullable=False)
     semester = Column(BigInteger, nullable=False)
     faculty = Column(BigInteger, nullable=False)
+    tm = Column(Boolean, nullable=True)
 
     workloads = relationship("Workload", back_populates="lesson", lazy=False)
     competences: Mapped[list['Competency']] = relationship(
