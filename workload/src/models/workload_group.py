@@ -9,18 +9,9 @@ group_workload_association = Table(
     Column('workload_id', BigInteger, ForeignKey('workloads.id'), primary_key=True)
 )
 
-competency_lesson_association = Table(
-    'competency_lesson',
+employee_lesson_association = Table(
+    'employee_lesson',
     Base.metadata,
-    Column('competency_id', BigInteger, ForeignKey('competences.id'), primary_key=True),
+    Column('employee_id', BigInteger, ForeignKey('employees.id'), primary_key=True),
           Column('lesson_id', BigInteger, ForeignKey('lessons.id'), primary_key=True)
-
-)
-
-competency_employee_association = Table(
-    'competency_employee',
-    Base.metadata,
-    Column('competency_id', BigInteger, ForeignKey('competences.id'), primary_key=True),
-          Column('employee_id', BigInteger, ForeignKey('employees.id'), primary_key=True)
-
 )

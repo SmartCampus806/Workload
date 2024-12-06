@@ -3,7 +3,7 @@ from typing import Any
 from sqlalchemy import Column, BigInteger, String, CheckConstraint, Boolean
 from sqlalchemy.orm import relationship, Mapped
 
-from src.models.workload_group import competency_lesson_association
+from src.models.workload_group import employee_lesson_association
 from src.models import BaseWithId
 
 class Lesson(BaseWithId):
@@ -17,10 +17,10 @@ class Lesson(BaseWithId):
     tm = Column(Boolean, nullable=True)
 
     workloads = relationship("Workload", back_populates="lesson", lazy=False)
-    competences: Mapped[list['Competency']] = relationship(
-        'Competency',
-        secondary=competency_lesson_association,
-        back_populates='lessons',
+    employees: Mapped[list['Employee']] = relationship(
+        'Employee',
+        secondary=employee_lesson_association,
+        back_populates='employees',
         lazy=False
     )
 

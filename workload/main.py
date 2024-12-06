@@ -8,15 +8,13 @@ from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
 from src.models import Employee, WorkloadContainer
-from src.routers import load_files_router, employee_router, workload_router, lesson_router, export_router
+from src.routers import load_files_router, export_router
 import ast
+from src.services import FilterService
 
 app = FastAPI()
 
 app.include_router(load_files_router, prefix='/load')
-app.include_router(employee_router, prefix='/employee')
-app.include_router(workload_router, prefix='/workload')
-app.include_router(lesson_router, prefix='/lesson')
 app.include_router(export_router, prefix='/export')
 
 import strawberry
@@ -25,21 +23,26 @@ from fastapi.params import Depends
 
 from src.contaier import MainContainer
 from src.graph_ql.types import EmployeeQ, WorkloadContainerQ
-from src.services import EmployeeService2
 
-def get_employees_service(employee_service: EmployeeService2 = Depends(Provide[MainContainer.employee_service_2])):
-    return employee_service
 
-#Погинация, фильтр по
+def get_filter_service(filter_service: FilterService = Depends(Provide[MainContainer.filter_service])) -> FilterService:
+    return filter_service
+
+
+
 @strawberry.type
 class Query:
-    @strawberry.field
-    async def employees(self, filters: Optional[str]) -> list[EmployeeQ] | None:
-        return await get_employees_service().search(Employee, ast.literal_eval(filters))
 
     @strawberry.field
-    async def workloads(self, filters: Optional[str]) -> list[WorkloadContainerQ] | None:
-        return await get_employees_service().search(WorkloadContainer, ast.literal_eval(filters))
+    async def employees_v2(self, filters: Optional[str], sort_field: Optional[str]) -> list[EmployeeQ]:
+        return await get_filter_service().search(model=Employee,filters=ast.literal_eval(filters),
+                                                 sort_by=(sort_field, 'asc'))
+
+    @strawberry.field
+    async def workloads(self, filters: Optional[str], sort_field: Optional[str]) -> list[WorkloadContainerQ]:
+        return await get_filter_service().search(model=WorkloadContainer,filters=ast.literal_eval(filters),
+                                                 sort_by=(sort_field, 'asc') )
+
 
 # Схема для GraphQL
 schema = strawberry.Schema(query=Query)
@@ -49,6 +52,7 @@ graphql_app = GraphQLRouter(schema)
 
 # Добавление маршрута в FastAPI
 app.include_router(graphql_app, prefix="/graphql")
+
 
 def add_moules_in_container(container_to_add: MainContainer) -> None:
     excluded_files = ['__init__.py', '__pycache__']

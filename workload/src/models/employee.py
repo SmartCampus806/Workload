@@ -1,58 +1,60 @@
-from typing import Any
+import re
+from sqlalchemy import String, Date, BigInteger, Float, Integer, ForeignKey, Enum
+from sqlalchemy.orm import relationship, Mapped, mapped_column, validates
+from typing import Any, List
+import enum
 
-from sqlalchemy import Column, BigInteger, String, Float, Date, Integer
-from sqlalchemy.orm import relationship, Mapped
-
-from src.models.workload_group import competency_employee_association
+from src.models.workload_group import employee_lesson_association
 from src.models import BaseWithId
 
+
+class GenderEnum(enum.Enum):
+    MALE = 'male'
+    FEMALE = 'female'
 
 class Employee(BaseWithId):
     __tablename__ = 'employees'
 
-    name = Column(String(255), nullable=False)
-    extra_workload = Column(BigInteger, nullable=False)
-    rate = Column(Float, nullable=False)
-    type_of_employment = Column(String(255), nullable=False)
-    post = Column(String(255), nullable=False)
-    department = Column(String(255), nullable=False, default='кафедра 806')
-    contract_end_date = Column(Date, nullable=True)
-    birthday = Column(Date, nullable=True)
-    phone = Column(String(12), nullable=True)
-    mail = Column(String(255), nullable=True)
-    gender = Column(String(6), nullable=True)
-    preferred_faculty = Column(Integer, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    birthday: Mapped[Date] = mapped_column(Date, nullable=True)
+    phone: Mapped[str] = mapped_column(String(12), nullable=True)
+    mail: Mapped[str] = mapped_column(String(255), nullable=True)
+    gender: Mapped[GenderEnum] = mapped_column(Enum(GenderEnum, create_type=True), nullable=True)
+    preferred_faculty: Mapped[int] = mapped_column(Integer, nullable=True)
 
-    workload_containers = relationship("WorkloadContainer", back_populates="employee", lazy=False)
+    positions: Mapped[List['EmployeePosition']] = relationship(
+        'EmployeePosition', back_populates='employee', lazy=False
+    )
 
-    competences: Mapped[list['Competency']] = relationship(
-        'Competency',
-        secondary=competency_employee_association,
-        back_populates='employees',
+    lesson_competences: Mapped[list['Lesson']] = relationship(
+        'Lesson',
+        secondary=employee_lesson_association,
+        back_populates='lessons',
         lazy=False
     )
 
     @property
     def workload(self):
-        return self.rate * 830
+        return sum(position.workload for position in self.positions)
 
-    @property
-    def available_workload(self):
-        sum = 0
-        for workload in self.workload_containers:
-            sum += workload.sum_workload
-        return self.workload - sum
-
-    def __init__(self, name: str, rate: float, extra_workload: int, type_of_employment: str, post: str,
-                 department: str, **kw: Any):
+    def __init__(self, name: str, **kw: Any):
         super().__init__(**kw)
         self.name = name
-        self.rate = rate
-        self.extra_workload = extra_workload
-        self.type_of_employment = type_of_employment
-        self.post = post
-        self.department = department
+
+    @validates('phone')
+    def validate_phone(self, key, phone):
+        phone_pattern = re.compile(r'^\+?[1-9]\d{1,14}$')
+        if not phone_pattern.match(phone):
+            raise ValueError(f"Invalid phone number: {phone}")
+        return phone
+
+    @validates('mail')
+    def validate_mail(self, key, mail):
+        email_pattern = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        if not email_pattern.match(mail):
+            raise ValueError(f"Invalid email address: {mail}")
+        return mail
 
     def __repr__(self):
         return f'{self.name}'
-

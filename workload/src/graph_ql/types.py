@@ -13,18 +13,18 @@ class CompetencyQ:
 class EmployeeQ:
     id: int
     name: str
+    competencies: List[CompetencyQ]
+    positions: List['EmployeePositionQ']
+
+@strawberry.type
+class EmployeePositionQ:
     extra_workload: int
     rate: float
     type_of_employment: str
     post: str
     department: str
     workload_containers: List['WorkloadContainerQ']
-    competencies: List[CompetencyQ]
     workload: float
-
-    @strawberry.field
-    def available_workload(self) -> float:
-        return sum(container.sum_workload for container in self.workload_containers)
 
 @strawberry.type
 class GroupsQ:

@@ -58,36 +58,34 @@ class ExportService:
 
         wb = Workbook()
         sheet = wb.active
-        sheet.title = "Лекциии"
+        sheet.title = 'Лекциии'
 
-        headers = ["id", "Имя", "Ставка", "Общая нагрузка", "Доступная нагрузка", "Доступная переработка", "???",
-                   "Должность", "Департамент", "Завершение контракта", "День рождения", "Номер", "Почта", "Пол",
-                   "Предпочитаемый факультет"]
+        headers = ['id', 'Имя', 'Номер', 'Почта', 'Пол', 'День рождения', 'Предпочитаемый факультет',
+                   'Департамент', 'Должность', 'Ставка', 'Тип занятости', 'Дата завершения контракта']
 
         sheet.append(headers)
 
         async with self.db.session_factory() as session:
-            employees = await session.execute(select(Employee).distinct())
-            employees = employees.scalars().unique().all()
+            employees_d = await session.execute(select(Employee).distinct())
+            employees: list[Employee] = employees_d.scalars().unique().all()
 
             for employee in employees:
-                sheet.append([
-                    employees.id,
-                    employees.name,
-                    employees.rate,
-                    employees.workload,
-                    employees.available_workload,
-                    employees.extra_workload,
-                    employees.type_of_employment,
-                    employees.post,
-                    employees.department,
-                    employees.contract_end_date,
-                    employees.birthday,
-                    employees.phone,
-                    employees.mail,
-                    employees.gender,
-                    employees.preferred_faculty
-                ])
+                for idx, position in enumerate(employee.positions):
+                    sheet.append([
+                        employee.id if idx == 0 else "",
+                        employee.name if idx == 0 else "",
+                        employee.phone if idx == 0 else "",
+                        employee.mail if idx == 0 else "",
+                        employee.gender if idx == 0 else "",
+                        employee.birthday if idx == 0 else "",
+                        employee.preferred_faculty if idx == 0 else "",
+
+                        position.department,
+                        position.post,
+                        position.rate,
+                        position.type_of_employment,
+                        position.contract_end_date,
+                    ])
                 
         ExportService.set_width_and_alignment(sheet, [5, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,])
         temp_file = NamedTemporaryFile(delete=False, suffix=".xlsx")
@@ -119,7 +117,7 @@ class ExportService:
                     lesson.id,
                     lesson.name,
                     lesson.faculty,
-                    lesson.semestr,
+                    lesson.semester,
                     lesson.year,
                     ", ".join(lesson.competences.name) if len(lesson.competences) != 0 else "",
                     lesson.stream

@@ -6,9 +6,9 @@ from src.models import BaseWithId
 class WorkloadContainer(BaseWithId):
     __tablename__ = 'workload_container'
 
-    employee_id = Column(BigInteger, ForeignKey('employees.id'), nullable=True)
+    employee_id = Column(BigInteger, ForeignKey('employee_positions.id'), nullable=True)
 
-    employee = relationship("Employee", back_populates="workload_containers", lazy=False)
+    employee = relationship("EmployeePosition", back_populates="workload_containers", lazy=False)
     workloads = relationship("Workload", back_populates="workload_container", lazy=False)
 
     """
