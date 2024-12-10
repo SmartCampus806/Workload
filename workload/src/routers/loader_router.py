@@ -2,8 +2,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 
 from src.contaier import MainContainer
-from src.services.parse_workload_service import ParseWorkloadService
-from src.services import ParseEmployeeService
+from src.services import ParseEmployeeService, ParseEmployeeLessonService, ParseWorkloadService
 
 load_files_router = APIRouter()
 
@@ -23,6 +22,17 @@ async def parse_workload(file: UploadFile = File(...),
 @inject
 async def parse_employees(file: UploadFile = File(...),
                    service: ParseEmployeeService = Depends(Provide[MainContainer.parse_employee_service])):
+    if not file.filename.endswith('.xlsx'):
+        raise HTTPException(status_code=400, detail='File format not supported. Please upload an .xlsx file')
+
+    contents = await file.read()
+    await service.parse(contents)
+
+
+@load_files_router.get('/employees-lesson')
+@inject
+async def parse_employees(file: UploadFile = File(...),
+                   service: ParseEmployeeLessonService = Depends(Provide[MainContainer.parse_employee_lesson_service])):
     if not file.filename.endswith('.xlsx'):
         raise HTTPException(status_code=400, detail='File format not supported. Please upload an .xlsx file')
 

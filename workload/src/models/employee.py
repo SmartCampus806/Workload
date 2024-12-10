@@ -24,13 +24,13 @@ class Employee(BaseWithId):
     preferred_faculty: Mapped[int] = mapped_column(Integer, nullable=True)
 
     positions: Mapped[List['EmployeePosition']] = relationship(
-        'EmployeePosition', back_populates='employee', lazy=False
+        'EmployeePosition', back_populates='employee', lazy=True
     )
 
-    lesson_competences: Mapped[list['Lesson']] = relationship(
+    lessons: Mapped[list['Lesson']] = relationship(
         'Lesson',
         secondary=employee_lesson_association,
-        back_populates='lessons',
+        back_populates='employees',
         lazy=False
     )
 

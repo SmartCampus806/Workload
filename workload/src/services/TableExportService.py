@@ -104,23 +104,28 @@ class ExportService:
         sheet = wb.active
         sheet.title = "Лекциии"
 
-        headers = ["id", "Наименование", "Факультет", "Семестр", "Год", "Компетенции", "Поток"]
+        headers = ["id", "Наименование", "Факультет", "Семестр", "Год", "Поток", "Допустимые Педагоги", "Типы нагрузки"]
         sheet.append(headers)
 
-        ExportService.set_width_and_alignment(sheet, [8, 60, 15, 5, 12, 30])
+        ExportService.set_width_and_alignment(sheet, [8, 60, 10, 5, 12, 10, 40, 40])
         async with self.db.session_factory() as session:
             lessons = await session.execute(select(Lesson).distinct())
             lessons = lessons.scalars().unique().all()
 
             for lesson in lessons:
+                types = set()
+                for worklaod in lesson.workloads:
+                    types.add(worklaod.type)
+
                 sheet.append([
                     lesson.id,
                     lesson.name,
                     lesson.faculty,
                     lesson.semester,
                     lesson.year,
-                    ", ".join(lesson.competences.name) if len(lesson.competences) != 0 else "",
-                    lesson.stream
+                    lesson.stream,
+                    ", ".join([str(name) for name in lesson.employees]) if len(lesson.employees) != 0 else "",
+                    ", ".join(types) if len(types) != 0 else "",
                 ])
 
         temp_file = NamedTemporaryFile(delete=False, suffix=".xlsx")

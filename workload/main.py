@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
 from src.models import Employee, WorkloadContainer
-from src.routers import load_files_router, export_router
+from src.routers import load_files_router, export_router, system_router
 import ast
 from src.services import FilterService
 
@@ -16,6 +16,7 @@ app = FastAPI()
 
 app.include_router(load_files_router, prefix='/load')
 app.include_router(export_router, prefix='/export')
+app.include_router(system_router, prefix='/system')
 
 import strawberry
 from dependency_injector.wiring import Provide

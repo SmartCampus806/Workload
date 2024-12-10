@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship, Mapped
 
 from src.models import BaseWithId
 
+
 class WorkloadContainer(BaseWithId):
     __tablename__ = 'workload_container'
 
@@ -11,10 +12,6 @@ class WorkloadContainer(BaseWithId):
     employee = relationship("EmployeePosition", back_populates="workload_containers", lazy=False)
     workloads = relationship("Workload", back_populates="workload_container", lazy=False)
 
-    """
-    need to view:
-    employee_id, employee_name, sum_workload, type, lessons???, 
-    """
     @property
     def sum_workload(self):
         total_sum = 0
@@ -45,5 +42,3 @@ class WorkloadContainer(BaseWithId):
 
     def __repr__(self):
         return f"workload={self.sum_workload}, type={self.workload_type}"
-
-

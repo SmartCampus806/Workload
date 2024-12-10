@@ -17,7 +17,7 @@ class EmployeePosition(BaseWithId):
     is_active : Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     employee_id: Mapped[int] = mapped_column(ForeignKey('employees.id'))
-    employee: Mapped['Employee'] = relationship('Employee', back_populates='positions')
+    employee: Mapped['Employee'] = relationship('Employee', back_populates='positions', lazy=True)
 
     workload_containers = relationship("WorkloadContainer", back_populates="employee", lazy=True)
 
@@ -31,7 +31,7 @@ class EmployeePosition(BaseWithId):
 
     @property
     def acceptable_workload(self):
-        return self.rate * 830
+        return self.rate * 830 + self.extra_workload
 
     @property
     def sum_workload(self):

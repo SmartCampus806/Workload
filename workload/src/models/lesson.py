@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship, Mapped
 from src.models.workload_group import employee_lesson_association
 from src.models import BaseWithId
 
+
 class Lesson(BaseWithId):
     __tablename__ = 'lessons'
 
@@ -20,7 +21,7 @@ class Lesson(BaseWithId):
     employees: Mapped[list['Employee']] = relationship(
         'Employee',
         secondary=employee_lesson_association,
-        back_populates='employees',
+        back_populates='lessons',
         lazy=False
     )
 

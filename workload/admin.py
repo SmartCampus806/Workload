@@ -7,7 +7,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.widgets import Select2Widget
 import psycopg2
 
-from src.models import Lesson, Employee, Groups, Workload, Competency, WorkloadContainer
+from src.models import Lesson, Employee, Groups, Workload, WorkloadContainer
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -36,8 +36,8 @@ class LessonAdmin(ModelView):
 
 
 class EmployeeAdmin(ModelView):
-    column_list = ['name', 'rate', 'type_of_employment', 'post', 'competencies', 'workload', 'available_workload']
-    form_columns = ['name', 'rate', 'type_of_employment', 'post', 'extra_workload', 'competences', 'workload_containers']
+    column_list = ['name']
+    form_columns = ['name', 'lessons']
 
 
 class GroupAdmin(ModelView):
@@ -60,7 +60,7 @@ admin.add_view(WorkloadAdmin(Workload, db.session))
 admin.add_view(LessonAdmin(Lesson, db.session))
 admin.add_view(EmployeeAdmin(Employee, db.session))
 admin.add_view(GroupAdmin(Groups, db.session))
-admin.add_view(CompetencyAdmin(Competency, db.session))
 admin.add_view(WorkloadContainerAdmin(WorkloadContainer, db.session))
+
 if __name__ == "__main__":
     app.run(debug=True)
