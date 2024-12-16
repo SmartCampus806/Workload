@@ -30,9 +30,12 @@ class FilterService:
         :return: Список найденных записей.
         """
         query = select(model)
-        query = self._apply_filters_v2(query, model, filters)
-        query = self._apply_sorting(query, model, sort_by)
-        query = self._apply_pagination(query, pagination)
+        if filters is not None:
+            query = self._apply_filters_v2(query, model, filters)
+        if sort_by is not None:
+            query = self._apply_sorting(query, model, sort_by)
+        if pagination is not None:
+            query = self._apply_pagination(query, pagination)
 
         result = await self.database.execute(query)
         return result.scalars().unique().all()

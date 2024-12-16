@@ -2,7 +2,7 @@ from tempfile import NamedTemporaryFile
 
 from openpyxl.styles import Alignment
 from openpyxl.workbook import Workbook
-from sqlalchemy import select
+from sqlalchemy import select, distinct
 
 from src.models import *
 from src.utils import Database
@@ -11,6 +11,33 @@ from src.utils import Database
 class ExportService:
     def __init__(self, database: Database):
         self.db = database
+
+    async def export_unique_lessons(self) -> str:
+        wb = Workbook()
+        sheet = wb.active
+        sheet.title = "Лекциии"
+
+        headers = ["Дисциплина", "Преподаватели"]
+        sheet.append(headers)
+        async with self.db.session_factory() as session:
+            unique_names_subquery = (select(Lesson.name).distinct().subquery())
+
+            lessons = await session.execute((select(Lesson).where(Lesson.name.in_(select(unique_names_subquery)))))
+            lessons: list[Lesson] = lessons.scalars().unique().all()
+
+            for lesson in lessons:
+                sheet.append([
+                    lesson.name,
+                    ", ".join([str(employee.name) for employee in lesson.employees]) if len(
+                        lesson.employees) != 0 else "",
+                ])
+
+        ExportService.set_width_and_alignment(sheet, [60, 30])
+        temp_file = NamedTemporaryFile(delete=False, suffix=".xlsx")
+        wb.save(temp_file.name)
+        temp_file.close()
+
+        return temp_file.name
 
     async def export_workload(self) -> str:
         wb = Workbook()
@@ -24,7 +51,7 @@ class ExportService:
             containers = await session.execute(select(WorkloadContainer).distinct())
             containers: list[WorkloadContainer] = containers.scalars().unique().all()
             for container in containers:
-                groups =  set()
+                groups = set()
                 for workload in container.workloads:
                     groups.update([group.name for group in workload.groups])
 
@@ -86,8 +113,8 @@ class ExportService:
                         position.type_of_employment,
                         position.contract_end_date,
                     ])
-                
-        ExportService.set_width_and_alignment(sheet, [5, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,])
+
+        ExportService.set_width_and_alignment(sheet, [5, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, ])
         temp_file = NamedTemporaryFile(delete=False, suffix=".xlsx")
         wb.save(temp_file.name)
         temp_file.close()

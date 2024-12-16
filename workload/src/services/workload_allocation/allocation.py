@@ -1,6 +1,7 @@
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, update
 from sqlalchemy.orm import selectinload
 
+from src.services.workload_allocation.genetic_algoritm import GeneticAllocation
 from src.models import EmployeePosition, Lesson, WorkloadContainer, Employee
 from src.utils import Database
 from loguru import logger as log
@@ -13,6 +14,23 @@ class AllocationService:
         :param database: Экземпляр класса для взаимодействия с базой данных
         """
         self.database = database
+        self.genetic = GeneticAllocation()
+
+    async def remove_allocation(self):
+        async with self.database.session_factory() as session:
+            await session.execute((update(WorkloadContainer).values(employee_id=None)))
+            await session.commit()
+
+    async def distribute_workload_with_genetic(self):
+        async with self.database.session_factory() as session:
+            employees = await AllocationService._get_employees(session)
+            workload_containers = await AllocationService._get_unalocated_workload(session)
+            pairs: list[tuple[EmployeePosition, WorkloadContainer]] = await self.genetic.run(employees, workload_containers)
+            for pair in pairs:
+                pair[1].employee_id = pair[0].id
+
+            await session.commit()
+            log.info("Генетический алгоритм завершил работу")
 
     async def distribute_workload(self):
         """
@@ -41,34 +59,35 @@ class AllocationService:
 
                 suitable_employees.sort(key=lambda e: e.sum_workload)
 
-
-                assigned_employee = suitable_employees[0] # Преподавтаель с наименьшей нагрузкой
+                assigned_employee = suitable_employees[0]  # Преподавтаель с наименьшей нагрузкой
 
                 container.employee_id = assigned_employee.id
                 assigned_employee.workload_containers.append(container)
 
-                log.info(f"нагруза: {container} по дисциплине {lesson} распределена на {assigned_employee.employee.name}")
+                log.info(
+                    f"нагруза: {container} по дисциплине {lesson} распределена на {assigned_employee.employee.name}")
 
             await session.commit()
 
     @staticmethod
     async def _get_employees(session):
         employees = await session.execute(select(EmployeePosition)
-            .where(and_(
-                EmployeePosition.is_active == True,
-                EmployeePosition.department == 'кафедра 806',
-                EmployeePosition.post != 'инженер',
-                EmployeePosition.post != 'ведущий инженер'
-            ))
-            .options(selectinload(EmployeePosition.employee).selectinload(Employee.lessons))
-            .options(selectinload(EmployeePosition.workload_containers))
-            .options(selectinload(EmployeePosition.employee))
-            .distinct())
+                                          .where(and_(
+            EmployeePosition.is_active == True,
+            EmployeePosition.department == 'кафедра 806',
+            EmployeePosition.post != 'инженер',
+            EmployeePosition.post != 'ведущий инженер'
+        ))
+                                          .options(
+            selectinload(EmployeePosition.employee).selectinload(Employee.lessons))
+                                          .options(selectinload(EmployeePosition.workload_containers))
+                                          .options(selectinload(EmployeePosition.employee))
+                                          .distinct())
         return employees.scalars().all()
 
     @staticmethod
     async def _get_unalocated_workload(session):
         lessons = await session.execute(select(WorkloadContainer)
-            .where(WorkloadContainer.employee_id == None)
-            .distinct())
+                                        .where(WorkloadContainer.employee_id == None)
+                                        .distinct())
         return lessons.scalars().unique().all()

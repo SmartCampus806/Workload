@@ -25,8 +25,3 @@ class Processor1(Processor):
                 print(f"WorkloadContainer {subject.id} не может быть распределен (недостаточно часов или компетенций).")
 
         return subjects, teachers
-
-    # def calculate_load(self, teachers: List[Teacher]) -> Dict[int, Tuple[int, float]]:
-    #     load_summary = {teacher.teacher_id: (teacher.loaded_hours, Processor.load_percentage(teacher)) for teacher in
-    #                     teachers}
-    #     return load_summary

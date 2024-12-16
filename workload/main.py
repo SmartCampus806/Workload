@@ -40,8 +40,8 @@ class Query:
                                                  sort_by=(sort_field, 'asc'))
 
     @strawberry.field
-    async def workloads(self, filters: Optional[str], sort_field: Optional[str]) -> list[WorkloadContainerQ]:
-        return await get_filter_service().search(model=WorkloadContainer,filters=ast.literal_eval(filters),
+    async def workloads(self, filters: Optional[str]= None, sort_field: Optional[str]= None) -> list[WorkloadContainerQ]:
+        return await get_filter_service().search(model=WorkloadContainer,filters=ast.literal_eval(filters) if filters is not None else None,
                                                  sort_by=(sort_field, 'asc') )
 
 

@@ -11,3 +11,15 @@ system_router = APIRouter()
 async def parse_workload(service: AllocationService = Depends(Provide[MainContainer.allocation_service])):
     await service.distribute_workload()
     return "OK"
+
+@system_router.get('/allocate-genetic')
+@inject
+async def parse_workload(service: AllocationService = Depends(Provide[MainContainer.allocation_service])):
+    await service.distribute_workload_with_genetic()
+    return "OK"
+
+@system_router.get('/clear-allocate')
+@inject
+async def parse_workload(service: AllocationService = Depends(Provide[MainContainer.allocation_service])):
+    await service.remove_allocation()
+    return "OK"
