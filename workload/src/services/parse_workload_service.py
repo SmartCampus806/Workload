@@ -132,7 +132,9 @@ class ParseWorkloadService:
                                                                       workload=row["Лекции план"],
                                                                       lesson=lesson, groups=[group])
                         megaworkload_ind = await self.create_mega_workload(session)
-                        workload_lection.workload_container = megaworkload_ind
+                        
+                        if workload_lection.workload != 0:
+                            workload_lection.workload_container = megaworkload_ind
 
                     else:
                         workload_lection.groups.append(group)
