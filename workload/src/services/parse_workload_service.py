@@ -1,6 +1,7 @@
-import time
+import re
 
 from src.models import Groups, Workload, Lesson, WorkloadContainer
+from src.models.lesson import StageOfEducation
 from src.utils.configuration import AppConfig
 from src.utils.database_manager import Database
 from sqlalchemy.future import select
@@ -29,6 +30,24 @@ class ParseWorkloadService:
                                    ("Диплом", "Диплом "),
                                    ("Прочее", "Прочее ")]
 
+    def parse_stage(self, group_name):
+        string = group_name.split('-')[1]
+        match = re.search(r'[а-яёА-ЯЁ]+', string).group(0)
+
+        if match in ['Б', 'Бк', 'Бки']:
+            return StageOfEducation.Bachelor
+        elif match in ['М', 'Мки']:
+            return StageOfEducation.Master
+        elif match in ['С']:
+            return StageOfEducation.Speciality
+        elif match in ['БВ', 'БВк']:
+            return StageOfEducation.BasicHigherEd
+        elif match in ['СВ', 'СВк']:
+            return StageOfEducation.SpecialHigherEd
+        elif match in ['А']:
+            return StageOfEducation.Postgraduate
+        return StageOfEducation.Other
+
     def get_academic_year(self):
         now = datetime.now()
         current_year = now.year
@@ -50,15 +69,25 @@ class ParseWorkloadService:
         group = result.scalars().first()
         return group
 
-    async def find_lesson(self, session, stream: str, name: str, semester: int, faculty: int) -> bool:
-        stmt = select(Lesson).filter_by(stream=stream, name=name, semester=semester, faculty=faculty)
+    async def find_lesson(self, session, stream: str, name: str, semester: int, faculty: int, stage) -> bool:
+        stmt = select(Lesson).filter_by(stream=stream,
+                                        name=name,
+                                        semester=semester,
+                                        faculty=faculty,
+                                        stage_of_education=stage)
         result = await session.execute(stmt)
         lesson = result.scalars().first()
         return lesson
 
-    async def create_lesson(self, session, stream: str, name: str, semester: int, faculty: int):
+    async def create_lesson(self, session, stream: str, name: str, semester: int, faculty: int, stage):
         year = self.get_academic_year()
-        new_lesson = Lesson(stream=stream, name=name, year=year, semester=semester, faculty=faculty, tm=True)
+        new_lesson = Lesson(stream=stream,
+                            name=name,
+                            year=year,
+                            semester=semester,
+                            faculty=faculty,
+                            tm=True,
+                            stage_of_education=stage)
         session.add(new_lesson)
         await session.flush()
         return new_lesson
@@ -116,15 +145,16 @@ class ParseWorkloadService:
                 semester = row['Семестр ']
                 faculty = int(row['Факультет'].replace("№", '').split()[-1])
                 stream = str(row['Поток '])
+                stage = self.parse_stage(group_name)
 
-                check_lesson = (stream, discipline_name, semester, faculty)
+                check_lesson = (stream, discipline_name, semester, faculty, stage)
 
                 if row['Поток '] != 0:
                     if check_lesson not in lessons_set:
-                        if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
-                            lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
+                        if not await self.find_lesson(session, stream, discipline_name, semester, faculty, stage):
+                            lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty, stage)
                         else:
-                            lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty)
+                            lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty, stage)
                             lesson.tm = True
                         lessons_set.add(check_lesson)
 
@@ -157,10 +187,10 @@ class ParseWorkloadService:
                                 workload.workload_container = megaworkload_ind
 
                 elif row['Поток '] == 0:
-                    if not await self.find_lesson(session, stream, discipline_name, semester, faculty):
-                        lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty)
+                    if not await self.find_lesson(session, stream, discipline_name, semester, faculty, stage):
+                        lesson = await self.create_lesson(session, stream, discipline_name, semester, faculty, stage)
                     else:
-                        lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty)
+                        lesson = await self.find_lesson(session, stream, discipline_name, semester, faculty, stage)
                         lesson.tm = True
 
                     for type_of_single_workload in self.general_workloads + self.individual_workloads:
@@ -175,6 +205,3 @@ class ParseWorkloadService:
 
             await session.execute(text('DELETE FROM "lessons" WHERE tm = false'))
             await session.commit()
-
-# TODO добавить проверку на удаление лессонов только текущего года
-# TODO не добавлять ворклоад лекции если лекционная нагрузка 0 часов

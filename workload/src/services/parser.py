@@ -98,7 +98,6 @@ def find_discipline_indexes(df):
     return found
 
 
-
 def parse_raw_file(file_data):
     df = pd.read_excel(file_data)
     df = df.map(clean_text).dropna(axis=1, how='all')
